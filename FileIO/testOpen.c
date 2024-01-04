@@ -43,6 +43,9 @@ int main()
         perror("opnen error");
     }
     printf("fd5 = %d\n", fd5);
-
+    close(fd2);
+    close(fd3);
+    close(fd4);
+    close(fd5);
     return 0;
 }
