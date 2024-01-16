@@ -24,6 +24,9 @@ typedef struct threadpool_t
     int queueFront;
     /* 任务队列的队尾 */
     int queueRear;
+
+    /* 线程中的管理者 */
+    pthread_t managerThread;
     /* 线程池中的线程 */
     pthread_t *threadIds; 
     /* 最小的线程数 */
@@ -34,21 +37,27 @@ typedef struct threadpool_t
     int busyThreadNums;
     /* 存活的线程数：摸鱼的 */
     int liveThreadNums;
+    
     /* 锁--维护整个线程池的锁 */
     pthread_mutex_t mutexpool;
     /* 锁--只维护干活的线程 */
     pthread_mutex_t mutexBusy;
     /* 条件变量：任务队列有任务可以消费 */
-    pthread_cond_t notEmpth;
+    pthread_cond_t notEmpty;
     /* 条件变量：任务队列有空位可以继续生产 */
     pthread_cond_t notFull;
+
+    /* 离开的线程数 */
+    int exitThreads;
+    /* 关闭线程 */
+    int shutDown;
 
 }threadpool_t;
 
 /* 线程池初始化 */
 int threadPoolInit(threadpool_t *pool, int minThreads, int maxThreads, int queueCapacity);
 
-/* 添加一个任务 */
+/* 在线程池中添加任务--生产者 */
 int threadPoolAddTask(threadpool_t *pool, void * (* worker_hander)(void *), void *arg);
 
 /* 线程池的销毁 */
