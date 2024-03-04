@@ -34,7 +34,7 @@ static void * threadHander(void * arg)
         /* 进入循环先上锁。会有有资源和没有资源的两种情况：一等二直接拿 */
         pthread_mutex_lock(&(pool->mutexpool));
 
-        while (pool->queueSize == 0 && pool->shutDown != 0)
+        while (pool->queueSize == 0 && pool->shutDown == 0)
         {
             /* 等待一个条件变量（生产者发给消费者）并解锁 */
             pthread_cond_wait(&(pool->notEmpty), &(pool->mutexpool));
@@ -47,7 +47,7 @@ static void * threadHander(void * arg)
             pthread_mutex_unlock(&(pool->mutexpool));
             threadExitClrResources(pool);
         }
-        if (pool->shutDown == 0)
+        if (pool->shutDown == 1)
         {
             pthread_mutex_unlock(&(pool->mutexpool));
             threadExitClrResources(pool);
@@ -310,10 +310,15 @@ int threadPoolAddTask(threadpool_t *pool, void * (* worker_hander)(void *), void
     /* 加锁 */
     pthread_mutex_lock(&(pool->mutexpool));
     /* 如果任务队列的size 等于 队列容量时，需要等待一个不满的信号 */
-    while (pool->queueSize == pool->queueCapacity)
+    while (pool->queueSize == pool->queueCapacity && pool->shutDown == 0)
     {
         pthread_cond_wait(&(pool->notFull), &(pool->mutexpool));
     }
+    if (pool->shutDown == 1)
+    {
+        /* code */
+    }
+    
     /* 程序到这个地方任务队列中一定有任务可以放任务，并且放到队尾 */
     pool->taskQueue[pool->queueRear].worker_hander = worker_hander;
     pool->taskQueue[pool->queueRear].arg = arg;

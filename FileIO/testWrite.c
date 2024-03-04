@@ -18,7 +18,8 @@ int main()
     /* 向文件中写数据 */
     
     char * ptr = "hello world!\n";
-    int bytes = write(fd, ptr, strlen(ptr) + 1); 
+    /* 不能加一，遇到反斜杠0会导致下面的输不出来 */
+    int bytes = write(fd, ptr, strlen(ptr)); 
     if (bytes < 0)
     {
         perror("write error");
